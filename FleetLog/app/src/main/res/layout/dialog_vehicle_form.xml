@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <EditText
+        android:id="@+id/etBrand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Marca (ej. Toyota)" />
+
+    <EditText
+        android:id="@+id/etModel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Modelo (ej. Hilux)"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etPlate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Placa (ej. ABC-1234)"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etYear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Año"
+        android:layout_marginTop="8dp"/>
+
+    <CheckBox
+        android:id="@+id/cbIsPickup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Es Camioneta (Pickup)"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>
