@@ -7,13 +7,79 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvScreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="36sp"
+            android:gravity="end"
+            android:padding="16dp"
+            android:text=""
+            android:textColor="@android:color/black"
+            android:background="#EEEEEE"
+            android:layout_marginBottom="24dp"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*">
+
+            <TableRow android:layout_marginBottom="8dp">
+                <Button android:id="@+id/btn1" android:text="1\n(Buzón)" />
+                <Button android:id="@+id/btn2" android:text="2" />
+                <Button android:id="@+id/btn3" android:text="3" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="8dp">
+                <Button android:id="@+id/btn4" android:text="4" />
+                <Button android:id="@+id/btn5" android:text="5" />
+                <Button android:id="@+id/btn6" android:text="6" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="8dp">
+                <Button android:id="@+id/btn7" android:text="7" />
+                <Button android:id="@+id/btn8" android:text="8" />
+                <Button android:id="@+id/btn9" android:text="9" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="8dp">
+                <Button android:id="@+id/btnStar" android:text="*" />
+                <Button android:id="@+id/btn0" android:text="0\n(+)" />
+                <Button android:id="@+id/btnHash" android:text="#" />
+            </TableRow>
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btnCall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Llamar"
+                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white"/>
+
+            <Button
+                android:id="@+id/btnClear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="C"
+                android:backgroundTint="#F44336"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
