@@ -28,14 +28,6 @@ class MainActivity : AppCompatActivity() {
 
         // Manejar el intent entrante (si otra app nos llama usando ACTION_DIAL)
         handleIncomingIntent()
-
-//        enableEdgeToEdge()
-//        setContentView(R.layout.activity_main)
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
     }
 
     private fun setupButtons() {
@@ -52,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 // Solo tomamos el primer caracter por si el texto del botón dice "0\n(+)"
                 val digit = b.text.toString().substring(0, 1)
                 tvScreen.append(digit)
+                invalidateOptionsMenu()
             }
         }
 
@@ -61,6 +54,7 @@ class MainActivity : AppCompatActivity() {
             val currentText = tvScreen.text.toString()
             if (!currentText.startsWith("+")) {
                 tvScreen.text = "+$currentText"
+                invalidateOptionsMenu()
             }
             true // Consumimos el evento
         }
@@ -77,6 +71,7 @@ class MainActivity : AppCompatActivity() {
             val currentText = tvScreen.text.toString()
             if (currentText.isNotEmpty()) {
                 tvScreen.text = currentText.dropLast(1)
+                invalidateOptionsMenu()
             }
         }
 
@@ -92,6 +87,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- MENU DE OPCIONES ---
+    // Este metodo se ejecuta cada vez que llamamos a invalidateOptionsMenu()
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val number = tvScreen.text.toString()
+
+        // Buscamos el item de "Añadir a contactos"
+        val addContactItem = menu?.findItem(R.id.action_add_contact)
+
+        // El botón solo será visible si la pantalla NO está vacía
+        addContactItem?.isVisible = number.isNotEmpty()
+
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_dialer, menu)
         return true
