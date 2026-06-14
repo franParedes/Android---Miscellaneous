@@ -1,12 +1,27 @@
+# =========================
+# 1. NODE.JS / BACKEND API
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Entornos y secretos (¡CRÍTICO!)
+.env
+.env.test
+.env.production
+.env.local
+
+# =========================
+# 2. ANDROID / FRONTEND
+# =========================
 # Gradle files
 .gradle/
 build/
+app/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
-
-# Log/OS Files
-*.log
 
 # Android Studio generated files and folders
 captures/
@@ -15,13 +30,6 @@ captures/
 *.aab
 *.apk
 output-metadata.json
-
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
 
 # Keystore files
 *.jks
@@ -32,3 +40,19 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# =========================
+# 3. IDE / SISTEMA OPERATIVO
+# =========================
+# IntelliJ / Android Studio / VS Code
+*.iml
+.idea/
+.vscode/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Log/OS Files
+*.log
+.DS_Store
+Thumbs.db
