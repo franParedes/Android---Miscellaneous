@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etVehicleId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="ID del Vehículo (número)"
+        android:inputType="number"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etMaintDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción (ej. Cambio de aceite)"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etMaintCost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Costo (ej. 1500.00)"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etServiceDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha de servicio (YYYY-MM-DD)"
+        android:inputType="date" />
+
+</LinearLayout>

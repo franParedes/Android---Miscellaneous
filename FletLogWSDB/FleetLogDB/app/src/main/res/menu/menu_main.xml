@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- REQUISITO RÚBRICA: onCreateOptionsMenu obligatorio -->
+
+    <!-- Acción principal: Agregar vehículo -->
     <item
         android:id="@+id/action_add"
         android:title="Agregar"
         android:icon="@android:drawable/ic_menu_add"
         app:showAsAction="ifRoom" />
+
+    <!-- Navegación a otras entidades -->
+    <item
+        android:id="@+id/action_drivers"
+        android:title="Conductores"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_maintenance"
+        android:title="Mantenimientos"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_fuel"
+        android:title="Combustible"
+        app:showAsAction="never" />
+
+    <!-- Cerrar sesión -->
+    <item
+        android:id="@+id/action_logout"
+        android:title="Cerrar Sesión"
+        app:showAsAction="never" />
+
 </menu>

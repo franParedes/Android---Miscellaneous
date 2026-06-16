@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="3dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvMaintVehicle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🔧 Toyota - ABC-1234"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#1A237E" />
+
+            <TextView
+                android:id="@+id/tvMaintDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2024-01-15"
+                android:textSize="12sp"
+                android:textColor="#777777" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvMaintDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cambio de aceite y filtro"
+            android:textSize="13sp"
+            android:textColor="#444444"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvMaintCost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Costo: C$ 1,500.00"
+            android:textSize="13sp"
+            android:textColor="#2E7D32"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

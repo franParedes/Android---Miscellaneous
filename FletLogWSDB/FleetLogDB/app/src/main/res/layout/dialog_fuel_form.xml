@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etFuelVehicleId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="ID del Vehículo (número)"
+        android:inputType="number"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etGallons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Galones cargados (ej. 10.5)"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etTotalCost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Costo total (ej. 525.00)"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="10dp" />
+
+    <EditText
+        android:id="@+id/etDateFilled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha de carga (YYYY-MM-DD)"
+        android:inputType="date" />
+
+</LinearLayout>

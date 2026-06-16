@@ -3,12 +3,95 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
-    <EditText android:id="@+id/etBrand" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Marca (ej. Toyota)" />
-    <EditText android:id="@+id/etModel" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Modelo (ej. Hilux)" android:layout_marginTop="8dp"/>
-    <EditText android:id="@+id/etPlate" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Placa (ej. ABC-1234)" android:layout_marginTop="8dp"/>
-    <EditText android:id="@+id/etYear" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:hint="Año" android:layout_marginTop="8dp"/>
-    <CheckBox android:id="@+id/cbIsPickup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Es Camioneta (Pickup)" android:layout_marginTop="8dp"/>
+    <!-- Imagen del vehículo (seleccionada de galería y convertida a Base64) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Imagen del Vehículo:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <ImageView
+        android:id="@+id/ivPreview"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:scaleType="centerCrop"
+        android:background="#EEEEEE"
+        android:src="@drawable/ic_car"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnSelectImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seleccionar de Galería"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Marca -->
+    <EditText
+        android:id="@+id/etBrand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Marca (ej. Toyota)"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Modelo -->
+    <EditText
+        android:id="@+id/etModel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Modelo (ej. Hilux)"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Placa -->
+    <EditText
+        android:id="@+id/etPlate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Placa (ej. ABC-1234)"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Año -->
+    <EditText
+        android:id="@+id/etYear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Año (ej. 2023)"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Color -->
+    <EditText
+        android:id="@+id/etColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Color (ej. Blanco)"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Kilometraje -->
+    <EditText
+        android:id="@+id/etMileage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Kilometraje (ej. 15000)"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Estado -->
+    <EditText
+        android:id="@+id/etStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Estado: Activo / Mantenimiento / Inactivo"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Es Camioneta -->
+    <CheckBox
+        android:id="@+id/cbIsPickup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Es Camioneta (Pickup)" />
 
 </LinearLayout>

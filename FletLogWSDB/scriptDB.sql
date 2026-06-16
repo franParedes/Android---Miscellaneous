@@ -44,3 +44,58 @@ CREATE TABLE IF NOT EXISTS fuel_logs (
     date_filled DATE NOT NULL,
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
 );
+
+/*
+AUTENTICACION
+*/
+-- 1. Tabla de Usuarios principales
+CREATE TABLE IF NOT EXISTS user (
+    id VARCHAR(255) PRIMARY KEY,
+    name TEXT NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    emailVerified TINYINT(1) NOT NULL,
+    image TEXT,
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL
+);
+
+-- 2. Tabla de Sesiones activas
+CREATE TABLE IF NOT EXISTS session (
+    id VARCHAR(255) PRIMARY KEY,
+    expiresAt DATETIME NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+    ipAddress TEXT,
+    userAgent TEXT,
+    userId VARCHAR(255) NOT NULL,
+    FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- 3. Tabla de Cuentas (Crucial para Login con Facebook/Google y Contraseñas)
+CREATE TABLE IF NOT EXISTS account (
+    id VARCHAR(255) PRIMARY KEY,
+    accountId TEXT NOT NULL,
+    providerId TEXT NOT NULL,
+    userId VARCHAR(255) NOT NULL,
+    accessToken TEXT,
+    refreshToken TEXT,
+    idToken TEXT,
+    accessTokenExpiresAt DATETIME,
+    refreshTokenExpiresAt DATETIME,
+    scope TEXT,
+    password TEXT,
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+    FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- 4. Tabla de Verificaciones (Tokens para restablecer o validar correos)
+CREATE TABLE IF NOT EXISTS verification (
+    id VARCHAR(255) PRIMARY KEY,
+    identifier TEXT NOT NULL,
+    value TEXT NOT NULL,
+    expiresAt DATETIME NOT NULL,
+    createdAt DATETIME,
+    updatedAt DATETIME
+);
