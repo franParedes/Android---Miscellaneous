@@ -1,8 +1,7 @@
 package com.example.fleetlogdb
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.Menu
@@ -15,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fleetlogdb.model.Vehicle
@@ -50,8 +50,20 @@ class MainActivity : AppCompatActivity() {
     private var currentImageBase64: String? = null
     private var dialogImageView: ImageView? = null
 
-    companion object {
-        private const val REQUEST_IMAGE_PICK = 1001
+    // REQUISITO RÚBRICA: Gestión de imágenes Base64 con galería
+    // Usamos ActivityResultLauncher (API moderna) en lugar del deprecado startActivityForResult
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val base64 = ImageUtils.uriToBase64(this, uri)
+            if (base64 != null) {
+                currentImageBase64 = base64
+                dialogImageView?.setImageBitmap(ImageUtils.base64ToBitmap(base64))
+            } else {
+                Toast.makeText(this, "No se pudo procesar la imagen.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -227,8 +239,7 @@ class MainActivity : AppCompatActivity() {
 
         // REQUISITO: Abrir galería y convertir a Base64
         btnSelectImage.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
-            startActivityForResult(intent, REQUEST_IMAGE_PICK)
+            imagePickerLauncher.launch("image/*")
         }
 
         val dialog = AlertDialog.Builder(this)
@@ -312,28 +323,4 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // =====================================================================
-    // GALERÍA: Recibir imagen seleccionada y convertir a Base64
-    // REQUISITO RÚBRICA: La imagen se convierte a Base64 para enviarla en el JSON
-    // =====================================================================
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
-            val uri: Uri? = data?.data
-            if (uri != null) {
-                // Convertir URI → Base64 (usando ImageUtils)
-                val base64 = ImageUtils.uriToBase64(this, uri)
-                if (base64 != null) {
-                    currentImageBase64 = base64
-                    // Mostrar preview en el ImageView del diálogo
-                    val bitmap = ImageUtils.base64ToBitmap(base64)
-                    dialogImageView?.setImageBitmap(bitmap)
-                } else {
-                    Toast.makeText(this, "No se pudo procesar la imagen.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 }
