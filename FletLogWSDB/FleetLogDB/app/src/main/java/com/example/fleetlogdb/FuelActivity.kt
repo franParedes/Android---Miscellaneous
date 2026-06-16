@@ -20,10 +20,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Pantalla de Gestión de Registros de Combustible.
+ * Pantalla de Gestión de Registros de Combustible – CRUD completo.
  * ENDPOINTS:
  *  GET    /api/fuel       → lista con JOIN vehicles (incluye plate y brand)
  *  POST   /api/fuel       → { vehicle_id, gallons, total_cost, date_filled }
+ *  PUT    /api/fuel/:id   → { vehicle_id, gallons, total_cost, date_filled }
  *  DELETE /api/fuel/:id   → eliminar
  */
 class FuelActivity : AppCompatActivity() {
@@ -47,6 +48,12 @@ class FuelActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         registerForContextMenu(listView)
+
+        // Click corto → editar
+        listView.setOnItemClickListener { _, _, position, _ ->
+            showFuelFormDialog(fuelList[position])
+        }
+
         loadFuel()
     }
 
@@ -89,7 +96,7 @@ class FuelActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> { finish(); true }
-            1 -> { showFuelFormDialog(); true }
+            1 -> { showFuelFormDialog(null); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -97,45 +104,86 @@ class FuelActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         menu?.setHeaderTitle("Opciones")
-        menu?.add(0, 2, 0, "Eliminar")
+        menu?.add(0, 2, 0, "Editar")
+        menu?.add(0, 3, 0, "Eliminar")
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-        if (item.itemId == 2) {
-            confirmDelete(fuelList[info.position])
-            return true
+        return when (item.itemId) {
+            2 -> { showFuelFormDialog(fuelList[info.position]); true }
+            3 -> { confirmDelete(fuelList[info.position]); true }
+            else -> super.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item)
     }
 
-    private fun showFuelFormDialog() {
+    // --- FORMULARIO INSERT / UPDATE con validaciones ---
+    private fun showFuelFormDialog(logToEdit: FuelLog?) {
         val dialogView   = layoutInflater.inflate(R.layout.dialog_fuel_form, null)
         val etVehicleId  = dialogView.findViewById<EditText>(R.id.etFuelVehicleId)
         val etGallons    = dialogView.findViewById<EditText>(R.id.etGallons)
         val etTotalCost  = dialogView.findViewById<EditText>(R.id.etTotalCost)
         val etDateFilled = dialogView.findViewById<EditText>(R.id.etDateFilled)
 
-        AlertDialog.Builder(this)
-            .setTitle("Registrar Combustible")
+        // Precarga datos si estamos editando
+        if (logToEdit != null) {
+            etVehicleId.setText(logToEdit.vehicleId.toString())
+            etGallons.setText(logToEdit.gallons.toString())
+            etTotalCost.setText(logToEdit.totalCost.toString())
+            etDateFilled.setText(logToEdit.dateFilled)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(if (logToEdit == null) "Registrar Combustible" else "Editar Combustible")
             .setView(dialogView)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton("Guardar", null)
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val vehicleIdStr = etVehicleId.text.toString().trim()
+                val gallonsStr   = etGallons.text.toString().trim()
+                val costStr      = etTotalCost.text.toString().trim()
+                val date         = etDateFilled.text.toString().trim()
+
+                // Validaciones
+                when {
+                    vehicleIdStr.isEmpty() -> { etVehicleId.error = "El ID del vehículo es obligatorio"; return@setOnClickListener }
+                    vehicleIdStr.toIntOrNull() == null -> { etVehicleId.error = "Debe ser un número entero"; return@setOnClickListener }
+                    gallonsStr.isEmpty() -> { etGallons.error = "Los galones son obligatorios"; return@setOnClickListener }
+                    gallonsStr.toDoubleOrNull() == null -> { etGallons.error = "Debe ser un número válido"; return@setOnClickListener }
+                    costStr.isEmpty() -> { etTotalCost.error = "El costo total es obligatorio"; return@setOnClickListener }
+                    costStr.toDoubleOrNull() == null -> { etTotalCost.error = "Debe ser un número válido"; return@setOnClickListener }
+                    date.isEmpty() -> { etDateFilled.error = "La fecha es obligatoria"; return@setOnClickListener }
+                }
+
                 val bodyJson = JSONObject().apply {
-                    put("vehicle_id",  etVehicleId.text.toString().toIntOrNull() ?: 0)
-                    put("gallons",     etGallons.text.toString().toDoubleOrNull() ?: 0.0)
-                    put("total_cost",  etTotalCost.text.toString().toDoubleOrNull() ?: 0.0)
-                    put("date_filled", etDateFilled.text.toString())
+                    put("vehicle_id",  vehicleIdStr.toInt())
+                    put("gallons",     gallonsStr.toDouble())
+                    put("total_cost",  costStr.toDouble())
+                    put("date_filled", date)
                 }.toString()
 
-                HttpTask("POST", ApiConstants.FUEL, bodyJson, sessionManager.getToken()) { r ->
-                    Toast.makeText(this,
-                        if (r != null) "Combustible registrado ✔" else "Error",
-                        Toast.LENGTH_SHORT).show()
-                    loadFuel()
-                }.execute()
+                if (logToEdit == null) {
+                    HttpTask("POST", ApiConstants.FUEL, bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Combustible registrado ✔" else "Error",
+                            Toast.LENGTH_SHORT).show()
+                        loadFuel()
+                    }.execute()
+                } else {
+                    HttpTask("PUT", ApiConstants.fuelById(logToEdit.id), bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Registro actualizado ✔" else "Error al actualizar",
+                            Toast.LENGTH_SHORT).show()
+                        loadFuel()
+                    }.execute()
+                }
+                dialog.dismiss()
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun confirmDelete(log: FuelLog) {

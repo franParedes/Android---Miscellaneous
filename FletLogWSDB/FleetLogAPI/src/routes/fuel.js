@@ -32,6 +32,20 @@ router.post('/', async (req, res) => {
     }
 });
 
+// ACTUALIZAR un registro de combustible
+router.put('/:id', async (req, res) => {
+    const { vehicle_id, gallons, total_cost, date_filled } = req.body;
+    try {
+        await pool.query(
+            'UPDATE fuel_logs SET vehicle_id=?, gallons=?, total_cost=?, date_filled=? WHERE id=?',
+            [vehicle_id, gallons, total_cost, date_filled, req.params.id]
+        );
+        res.json({ message: 'Registro actualizado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error actualizando el registro de combustible' });
+    }
+});
+
 // ELIMINAR un registro
 router.delete('/:id', async (req, res) => {
     try {

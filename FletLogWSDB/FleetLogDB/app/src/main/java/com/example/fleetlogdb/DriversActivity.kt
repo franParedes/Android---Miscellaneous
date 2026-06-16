@@ -20,16 +20,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Pantalla de Gestión de Conductores.
- * Mismo patrón que MainActivity: AsyncTask + ListView + ArrayAdapter + AlertDialog.
- *
+ * Pantalla de Gestión de Conductores – CRUD completo.
  * ENDPOINTS:
  *  GET    /api/drivers       → listar
  *  POST   /api/drivers       → crear  { name, license_number, phone }
+ *  PUT    /api/drivers/:id   → editar { name, license_number, phone }
  *  DELETE /api/drivers/:id   → eliminar
- *
- * Nota: El backend de drivers no tiene endpoint PUT (editar),
- * así que se implementa Crear y Eliminar (CRUD parcial según el backend).
  */
 class DriversActivity : AppCompatActivity() {
 
@@ -51,8 +47,12 @@ class DriversActivity : AppCompatActivity() {
         adapter = DriverAdapter(this, driversList)
         listView.adapter = adapter
 
-        // REQUISITO: Menú contextual en el ListView
         registerForContextMenu(listView)
+
+        // Click corto → editar
+        listView.setOnItemClickListener { _, _, position, _ ->
+            showDriverFormDialog(driversList[position])
+        }
 
         loadDrivers()
     }
@@ -95,7 +95,7 @@ class DriversActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> { finish(); true }
-            1 -> { showDriverFormDialog(); true }
+            1 -> { showDriverFormDialog(null); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -104,48 +104,84 @@ class DriversActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         menu?.setHeaderTitle("Opciones del Conductor")
-        menu?.add(0, 2, 0, "Eliminar")
+        menu?.add(0, 2, 0, "Editar")
+        menu?.add(0, 3, 0, "Eliminar")
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
         val driver = driversList[info.position]
-        if (item.itemId == 2) {
-            confirmDelete(driver)
-            return true
+        return when (item.itemId) {
+            2 -> { showDriverFormDialog(driver); true }
+            3 -> { confirmDelete(driver); true }
+            else -> super.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item)
     }
 
-    // --- FORMULARIO: AlertDialog.Builder ---
-    private fun showDriverFormDialog() {
+    // --- FORMULARIO INSERT / UPDATE con validaciones ---
+    private fun showDriverFormDialog(driverToEdit: Driver?) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_driver_form, null)
         val etName    = dialogView.findViewById<EditText>(R.id.etDriverName)
         val etLicense = dialogView.findViewById<EditText>(R.id.etLicenseNumber)
         val etPhone   = dialogView.findViewById<EditText>(R.id.etDriverPhone)
 
-        AlertDialog.Builder(this)
-            .setTitle("Nuevo Conductor")
+        // Precarga datos si estamos editando
+        if (driverToEdit != null) {
+            etName.setText(driverToEdit.name)
+            etLicense.setText(driverToEdit.licenseNumber)
+            etPhone.setText(driverToEdit.phone)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(if (driverToEdit == null) "Nuevo Conductor" else "Editar Conductor")
             .setView(dialogView)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton("Guardar", null) // null para controlar el cierre manualmente
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name    = etName.text.toString().trim()
+                val license = etLicense.text.toString().trim()
+                val phone   = etPhone.text.toString().trim()
+
+                // Validaciones: campos obligatorios
+                when {
+                    name.isEmpty() -> { etName.error = "El nombre es obligatorio"; return@setOnClickListener }
+                    license.isEmpty() -> { etLicense.error = "El número de licencia es obligatorio"; return@setOnClickListener }
+                    phone.isEmpty() -> { etPhone.error = "El teléfono es obligatorio"; return@setOnClickListener }
+                }
+
                 val bodyJson = JSONObject().apply {
-                    put("name",           etName.text.toString())
-                    put("license_number", etLicense.text.toString())
-                    put("phone",          etPhone.text.toString())
+                    put("name",           name)
+                    put("license_number", license)
+                    put("phone",          phone)
                 }.toString()
 
-                HttpTask("POST", ApiConstants.DRIVERS, bodyJson, sessionManager.getToken()) { r ->
-                    Toast.makeText(this,
-                        if (r != null) "Conductor guardado ✔" else "Error al guardar",
-                        Toast.LENGTH_SHORT).show()
-                    loadDrivers()
-                }.execute()
+                if (driverToEdit == null) {
+                    // INSERT
+                    HttpTask("POST", ApiConstants.DRIVERS, bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Conductor guardado ✔" else "Error al guardar",
+                            Toast.LENGTH_SHORT).show()
+                        loadDrivers()
+                    }.execute()
+                } else {
+                    // UPDATE
+                    HttpTask("PUT", ApiConstants.driverById(driverToEdit.id), bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Conductor actualizado ✔" else "Error al actualizar",
+                            Toast.LENGTH_SHORT).show()
+                        loadDrivers()
+                    }.execute()
+                }
+                dialog.dismiss()
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+        dialog.show()
     }
 
-    // --- CONFIRMAR BORRADO: AlertDialog.Builder ---
+    // --- CONFIRMAR BORRADO ---
     private fun confirmDelete(driver: Driver) {
         AlertDialog.Builder(this)
             .setTitle("Eliminar Conductor")

@@ -22,6 +22,19 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const { name, license_number, phone } = req.body;
+    try {
+        await pool.query(
+            'UPDATE drivers SET name=?, license_number=?, phone=? WHERE id=?',
+            [name, license_number, phone, req.params.id]
+        );
+        res.json({ message: 'Conductor actualizado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error actualizando el conductor' });
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM drivers WHERE id=?', [req.params.id]);

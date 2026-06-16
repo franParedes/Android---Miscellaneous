@@ -231,18 +231,40 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, REQUEST_IMAGE_PICK)
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(if (vehicleToEdit == null) "Nuevo Vehículo" else "Editar Vehículo")
             .setView(dialogView)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton("Guardar", null) // null para controlar el cierre manualmente
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val brand   = etBrand.text.toString().trim()
+                val model   = etModel.text.toString().trim()
+                val plate   = etPlate.text.toString().trim()
+                val yearStr = etYear.text.toString().trim()
+                val color   = etColor.text.toString().trim()
+                val mileage = etMileage.text.toString().trim()
+                val status  = etStatus.text.toString().trim()
+
+                // Validaciones: campos obligatorios
+                when {
+                    brand.isEmpty() -> { etBrand.error = "La marca es obligatoria"; return@setOnClickListener }
+                    model.isEmpty() -> { etModel.error = "El modelo es obligatorio"; return@setOnClickListener }
+                    plate.isEmpty() -> { etPlate.error = "La placa es obligatoria"; return@setOnClickListener }
+                    yearStr.isEmpty() -> { etYear.error = "El año es obligatorio"; return@setOnClickListener }
+                    yearStr.toIntOrNull() == null -> { etYear.error = "El año debe ser un número"; return@setOnClickListener }
+                }
+
                 val bodyJson = JSONObject().apply {
-                    put("brand",       etBrand.text.toString())
-                    put("model",       etModel.text.toString())
-                    put("plate",       etPlate.text.toString())
-                    put("year",        etYear.text.toString().toIntOrNull() ?: 0)
-                    put("color",       etColor.text.toString().ifEmpty { "Blanco" })
-                    put("mileage",     etMileage.text.toString().toIntOrNull() ?: 0)
-                    put("status",      etStatus.text.toString().ifEmpty { "Activo" })
+                    put("brand",       brand)
+                    put("model",       model)
+                    put("plate",       plate)
+                    put("year",        yearStr.toInt())
+                    put("color",       color.ifEmpty { "Blanco" })
+                    put("mileage",     mileage.toIntOrNull() ?: 0)
+                    put("status",      status.ifEmpty { "Activo" })
                     put("imageBase64", currentImageBase64)
                     put("isPickup",    if (cbIsPickup.isChecked) 1 else 0)
                 }.toString()
@@ -264,9 +286,10 @@ class MainActivity : AppCompatActivity() {
                         loadVehicles()
                     }.execute()
                 }
+                dialog.dismiss()
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+        dialog.show()
     }
 
     // =====================================================================

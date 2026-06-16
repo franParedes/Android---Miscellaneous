@@ -20,10 +20,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Pantalla de Gestión de Mantenimientos.
+ * Pantalla de Gestión de Mantenimientos – CRUD completo.
  * ENDPOINTS:
- *  GET  /api/maintenance      → lista con JOIN vehicles (incluye plate y brand)
- *  POST /api/maintenance      → { vehicle_id, description, cost, service_date }
+ *  GET    /api/maintenance       → lista con JOIN vehicles (incluye plate y brand)
+ *  POST   /api/maintenance       → { vehicle_id, description, cost, service_date }
+ *  PUT    /api/maintenance/:id   → { vehicle_id, description, cost, service_date }
+ *  DELETE /api/maintenance/:id   → eliminar
  */
 class MaintenanceActivity : AppCompatActivity() {
 
@@ -46,6 +48,12 @@ class MaintenanceActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         registerForContextMenu(listView)
+
+        // Click corto → editar
+        listView.setOnItemClickListener { _, _, position, _ ->
+            showMaintenanceFormDialog(logsList[position])
+        }
+
         loadMaintenance()
     }
 
@@ -88,7 +96,7 @@ class MaintenanceActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> { finish(); true }
-            1 -> { showMaintenanceFormDialog(); true }
+            1 -> { showMaintenanceFormDialog(null); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -96,45 +104,85 @@ class MaintenanceActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         menu?.setHeaderTitle("Opciones")
-        menu?.add(0, 2, 0, "Eliminar")
+        menu?.add(0, 2, 0, "Editar")
+        menu?.add(0, 3, 0, "Eliminar")
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-        if (item.itemId == 2) {
-            confirmDelete(logsList[info.position])
-            return true
+        return when (item.itemId) {
+            2 -> { showMaintenanceFormDialog(logsList[info.position]); true }
+            3 -> { confirmDelete(logsList[info.position]); true }
+            else -> super.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item)
     }
 
-    private fun showMaintenanceFormDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_maintenance_form, null)
+    // --- FORMULARIO INSERT / UPDATE con validaciones ---
+    private fun showMaintenanceFormDialog(logToEdit: MaintenanceLog?) {
+        val dialogView    = layoutInflater.inflate(R.layout.dialog_maintenance_form, null)
         val etVehicleId   = dialogView.findViewById<EditText>(R.id.etVehicleId)
         val etDescription = dialogView.findViewById<EditText>(R.id.etMaintDescription)
         val etCost        = dialogView.findViewById<EditText>(R.id.etMaintCost)
         val etServiceDate = dialogView.findViewById<EditText>(R.id.etServiceDate)
 
-        AlertDialog.Builder(this)
-            .setTitle("Registrar Mantenimiento")
+        // Precarga datos si estamos editando
+        if (logToEdit != null) {
+            etVehicleId.setText(logToEdit.vehicleId.toString())
+            etDescription.setText(logToEdit.description)
+            etCost.setText(logToEdit.cost.toString())
+            etServiceDate.setText(logToEdit.serviceDate)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(if (logToEdit == null) "Registrar Mantenimiento" else "Editar Mantenimiento")
             .setView(dialogView)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton("Guardar", null)
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val vehicleIdStr = etVehicleId.text.toString().trim()
+                val description  = etDescription.text.toString().trim()
+                val costStr      = etCost.text.toString().trim()
+                val serviceDate  = etServiceDate.text.toString().trim()
+
+                // Validaciones
+                when {
+                    vehicleIdStr.isEmpty() -> { etVehicleId.error = "El ID del vehículo es obligatorio"; return@setOnClickListener }
+                    vehicleIdStr.toIntOrNull() == null -> { etVehicleId.error = "Debe ser un número entero"; return@setOnClickListener }
+                    description.isEmpty() -> { etDescription.error = "La descripción es obligatoria"; return@setOnClickListener }
+                    costStr.isEmpty() -> { etCost.error = "El costo es obligatorio"; return@setOnClickListener }
+                    costStr.toDoubleOrNull() == null -> { etCost.error = "Debe ser un número válido"; return@setOnClickListener }
+                    serviceDate.isEmpty() -> { etServiceDate.error = "La fecha de servicio es obligatoria"; return@setOnClickListener }
+                }
+
                 val bodyJson = JSONObject().apply {
-                    put("vehicle_id",   etVehicleId.text.toString().toIntOrNull() ?: 0)
-                    put("description",  etDescription.text.toString())
-                    put("cost",         etCost.text.toString().toDoubleOrNull() ?: 0.0)
-                    put("service_date", etServiceDate.text.toString())
+                    put("vehicle_id",   vehicleIdStr.toInt())
+                    put("description",  description)
+                    put("cost",         costStr.toDouble())
+                    put("service_date", serviceDate)
                 }.toString()
 
-                HttpTask("POST", ApiConstants.MAINTENANCE, bodyJson, sessionManager.getToken()) { r ->
-                    Toast.makeText(this,
-                        if (r != null) "Mantenimiento registrado ✔" else "Error",
-                        Toast.LENGTH_SHORT).show()
-                    loadMaintenance()
-                }.execute()
+                if (logToEdit == null) {
+                    HttpTask("POST", ApiConstants.MAINTENANCE, bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Mantenimiento registrado ✔" else "Error",
+                            Toast.LENGTH_SHORT).show()
+                        loadMaintenance()
+                    }.execute()
+                } else {
+                    HttpTask("PUT", ApiConstants.maintenanceById(logToEdit.id), bodyJson, sessionManager.getToken()) { r ->
+                        Toast.makeText(this,
+                            if (r != null) "Mantenimiento actualizado ✔" else "Error al actualizar",
+                            Toast.LENGTH_SHORT).show()
+                        loadMaintenance()
+                    }.execute()
+                }
+                dialog.dismiss()
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun confirmDelete(log: MaintenanceLog) {

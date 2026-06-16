@@ -31,4 +31,26 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const { vehicle_id, description, cost, service_date } = req.body;
+    try {
+        await pool.query(
+            'UPDATE maintenance_logs SET vehicle_id=?, description=?, cost=?, service_date=? WHERE id=?',
+            [vehicle_id, description, cost, service_date, req.params.id]
+        );
+        res.json({ message: 'Mantenimiento actualizado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error actualizando el mantenimiento' });
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM maintenance_logs WHERE id=?', [req.params.id]);
+        res.json({ message: 'Mantenimiento eliminado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error eliminando el mantenimiento' });
+    }
+});
+
 export default router;
