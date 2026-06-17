@@ -27,26 +27,40 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Inicia el flujo OAuth de Google. Android abre esta URL en el browser.
 // Usamos una página HTML con redirect en JS para saltarnos la advertencia de ngrok.
 app.get("/api/google/start", (req, res) => {
-    const callbackURL = encodeURIComponent(
-        `${process.env.BETTER_AUTH_URL}/api/google/callback`
-    );
-    const googleAuthUrl = `${process.env.BETTER_AUTH_URL}/api/auth/sign-in/social?provider=google&callbackURL=${callbackURL}`;
-
-    // El header ngrok-skip-browser-warning evita la pantalla de advertencia
-    // cuando la petición viene desde esta misma página (fetch/XHR).
-    // Para el browser directo, usamos un meta-refresh + JS redirect.
-    res.setHeader("ngrok-skip-browser-warning", "true");
+    const callbackURL = `${process.env.BETTER_AUTH_URL}/api/google/callback`;
+    
     res.setHeader("Content-Type", "text/html");
     res.send(`<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0;url=${googleAuthUrl}">
   <title>Redirigiendo a Google...</title>
 </head>
 <body>
-  <p>Redirigiendo a Google...</p>
-  <script>window.location.replace("${googleAuthUrl}");</script>
+  <p>Conectando con Google...</p>
+  <script>
+    fetch('${process.env.BETTER_AUTH_URL}/api/auth/sign-in/social', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'google',
+        callbackURL: '${callbackURL}'
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.url) {
+        window.location.replace(data.url);
+      } else if (data.error) {
+        document.body.innerHTML = "Error: " + data.error.message;
+      } else {
+        document.body.innerHTML = "Error inesperado al iniciar OAuth.";
+      }
+    })
+    .catch(err => {
+      document.body.innerHTML = "Error de conexión: " + err.message;
+    });
+  </script>
 </body>
 </html>`);
 });

@@ -9,6 +9,7 @@ export const auth = betterAuth({
     // Orígenes de confianza: incluimos el deep link de Android
     trustedOrigins: [
         "http://localhost:3000",
+        "http://10.0.2.2:3000",
         "fleetlog://auth"
     ],
     emailAndPassword: {
