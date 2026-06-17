@@ -6,7 +6,6 @@ import driverRoutes from '../src/routes/drivers.js';
 import maintenanceRoutes from '../src/routes/maintenance.js';
 import fuelRoutes from '../src/routes/fuel.js';
 import { auth } from '../src/routes/auth.js';
-// IMPORTANTE: Agregamos el adaptador para Node.js
 import { toNodeHandler } from 'better-auth/node';
 
 dotenv.config();
@@ -14,29 +13,85 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware para entender JSON y permitir peticiones de otras apps (CORS)
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- RUTAS DE AUTENTICACIÓN (Better-Auth) ---
-// Better-Auth manejará automáticamente todas las rutas que empiecen con /api/auth
-// Ejemplo: /api/auth/sign-in, /api/auth/sign-up, /api/auth/sign-in/facebook
+// =====================================================================
+// PASO 1: Nuestras rutas custom de Google OAuth para Android
+// DEBEN ir ANTES del handler de Better-Auth para evitar que el wildcard
+// /api/auth/*path las intercepte y devuelva 404.
+// Las movemos a /api/google/* para evitar el conflicto.
+// =====================================================================
+
+// Inicia el flujo OAuth de Google. Android abre esta URL en el browser.
+// Usamos una página HTML con redirect en JS para saltarnos la advertencia de ngrok.
+app.get("/api/google/start", (req, res) => {
+    const callbackURL = encodeURIComponent(
+        `${process.env.BETTER_AUTH_URL}/api/google/callback`
+    );
+    const googleAuthUrl = `${process.env.BETTER_AUTH_URL}/api/auth/sign-in/social?provider=google&callbackURL=${callbackURL}`;
+
+    // El header ngrok-skip-browser-warning evita la pantalla de advertencia
+    // cuando la petición viene desde esta misma página (fetch/XHR).
+    // Para el browser directo, usamos un meta-refresh + JS redirect.
+    res.setHeader("ngrok-skip-browser-warning", "true");
+    res.setHeader("Content-Type", "text/html");
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0;url=${googleAuthUrl}">
+  <title>Redirigiendo a Google...</title>
+</head>
+<body>
+  <p>Redirigiendo a Google...</p>
+  <script>window.location.replace("${googleAuthUrl}");</script>
+</body>
+</html>`);
+});
+
+// Recibe el control después de que Google y Better-Auth completan el OAuth.
+// Better-Auth ya creó la sesión (cookie). Extraemos el token y redirigimos
+// al deep link de Android: fleetlog://auth?token=...
+app.get("/api/google/callback", async (req, res) => {
+    try {
+        const session = await auth.api.getSession({ headers: req.headers });
+
+        if (session && session.session && session.session.token) {
+            const token = session.session.token;
+            const email = session.user?.email || "";
+            // El OS de Android intercepta este deep link y lanza AuthCallbackActivity
+            res.redirect(`fleetlog://auth?token=${token}&email=${encodeURIComponent(email)}`);
+        } else {
+            res.redirect("fleetlog://auth?error=no_session");
+        }
+    } catch (error) {
+        console.error("Error en google/callback:", error);
+        res.redirect("fleetlog://auth?error=server_error");
+    }
+});
+
+// =====================================================================
+// PASO 2: Better-Auth maneja TODO bajo /api/auth/* (sign-in, sign-up,
+// callback de Google, etc.). Va DESPUÉS de nuestras rutas custom.
+// =====================================================================
 app.all("/api/auth/*path", toNodeHandler(auth));
 
-// --- RUTAS DE NUESTRA APLICACIÓN (Vehículos) ---
+// =====================================================================
+// RUTAS DE LA APLICACIÓN
+// =====================================================================
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/fuel', fuelRoutes);
 
-// Ruta de prueba para saber si el servidor está vivo
 app.get('/', (req, res) => {
     res.json({ message: 'Bienvenido al FleetLog API Web Service' });
 });
 
-// Arrancar el servidor
 app.listen(port, () => {
     console.log(`Servidor FleetLog corriendo en http://localhost:${port}`);
-    console.log(`Ruta de vehículos: http://localhost:${port}/api/vehicles`);
+    console.log(`Ngrok URL: ${process.env.BETTER_AUTH_URL}`);
+    console.log(`Google OAuth Android → ${process.env.BETTER_AUTH_URL}/api/google/start`);
 });

@@ -48,6 +48,28 @@
             android:name=".FuelActivity"
             android:exported="false" />
 
+        <!--
+            AuthCallbackActivity: Intercepta el deep link "fleetlog://auth"
+            que el backend envía de vuelta a Android tras el login con Google.
+            android:exported="true" es OBLIGATORIO para que el sistema operativo
+            pueda lanzarla desde el navegador externo (Chrome Custom Tab).
+            android:launchMode="singleTop" evita crear instancias duplicadas.
+        -->
+        <activity
+            android:name=".AuthCallbackActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Scheme y host que coinciden con fleetlog://auth -->
+                <data
+                    android:scheme="fleetlog"
+                    android:host="auth" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

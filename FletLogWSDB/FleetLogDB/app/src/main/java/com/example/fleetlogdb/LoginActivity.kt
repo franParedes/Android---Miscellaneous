@@ -1,6 +1,7 @@
 package com.example.fleetlogdb
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -83,15 +84,16 @@ class LoginActivity : AppCompatActivity() {
             performSignUp(email, password, name)
         }
 
-        // --- BOTÓN: Google (login social) ---
-        // Nota: Better-Auth social login requiere un WebView o navegador.
-        // Esta implementación abre el flujo OAuth en el navegador externo.
+        // --- BOTÓN: Google (login social con OAuth) ---
+        // El flujo completo es:
+        //   1. Android abre la URL del backend en el navegador del sistema
+        //   2. El backend redirige a Google OAuth
+        //   3. Google autentica al usuario y devuelve control al backend
+        //   4. El backend redirige a fleetlog://auth?token=...
+        //   5. Android intercepta el deep link en AuthCallbackActivity
         btnGoogle.setOnClickListener {
-            Toast.makeText(
-                this,
-                "Login con Google requiere configurar OAuth Client ID en el servidor.",
-                Toast.LENGTH_LONG
-            ).show()
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ApiConstants.SIGN_IN_GOOGLE))
+            startActivity(intent)
         }
     }
 
