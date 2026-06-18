@@ -11,7 +11,7 @@ object ApiConstants {
     // URL del servidor. Usando 10.0.2.2 para el emulador sin Google OAuth de momento.
     // Para que funcione Google OAuth luego, usaremos un túnel seguro.
     const val BASE_URL = "http://10.0.2.2:3000"
-    const val BASE_URL_AUTH_GOOGLE = "https://fleetlog-dev-fp.loca.lt"
+    const val BASE_URL_AUTH_GOOGLE = "https://fleetlog-dev-fp2.loca.lt"
 
     // --- Endpoints de Autenticación (Better-Auth) ---
     const val SIGN_UP        = "$BASE_URL/api/auth/sign-up/email"

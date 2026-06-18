@@ -11,7 +11,7 @@ import java.net.URL
  * AsyncTask genérico para realizar llamadas HTTP a la REST API.
  *
  * REQUISITO RÚBRICA:
- *  - Hereda de AsyncTask (prohibido Retrofit, Volley, Ktor, Coroutines)
+ *  - Hereda de AsyncTask
  *  - Usa exclusivamente HttpURLConnection para la conexión de red
  *
  * Uso:

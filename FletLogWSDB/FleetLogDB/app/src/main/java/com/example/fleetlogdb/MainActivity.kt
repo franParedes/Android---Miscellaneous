@@ -28,16 +28,6 @@ import org.json.JSONObject
 
 /**
  * Pantalla Principal: Lista de Vehículos.
- *
- * REQUISITOS RÚBRICA CUMPLIDOS:
- *  1. HttpURLConnection dentro de AsyncTask (via HttpTask)        ✅
- *  2. Parseo con JSONObject y JSONArray nativos                   ✅
- *  3. ListView (prohibido RecyclerView)                           ✅
- *  4. Adaptador VehicleAdapter hereda ArrayAdapter + getView()    ✅
- *  5. onCreateOptionsMenu + registerForContextMenu                ✅
- *  6. AlertDialog.Builder para formularios y confirmaciones       ✅
- *  7. SharedPreferences via SessionManager (token)                ✅
- *  8. Gestión de imágenes Base64 con galería                     ✅
  */
 class MainActivity : AppCompatActivity() {
 
